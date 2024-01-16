@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!-- HTML Form for survey questions -->
+<form id="surveyForm">
+    <!-- Question 1 -->
+    <label for="question1">Do you smoke?</label>
+    <input type="radio" name="question1" value="Yes"> Yes
+    <input type="radio" name="question1" value="No"> No
+
+    <!-- Question 2 will be dynamically shown based on the answer to Question 1 -->
+    <div id="question2Container" style="display:none;">
+        <label for="question2">How often do you smoke in a week?</label>
+        <input type="text" name="question2" id="question2">
+    </div>
+
+    <!-- Question 3 will be dynamically shown based on the answer to Question 1 -->
+    <div id="question3Container" style="display:none;">
+        <label for="question3">Is there anybody who smokes in your friends?</label>
+        <input type="text" name="question3" id="question3">
+    </div>
+
+    <button type="button" onclick="submitSurvey()">Submit</button>
+</form>
+
+<script>
+    function submitSurvey() {
+        // Get answers from the form
+        const answers = {
+            question1: document.querySelector('input[name="question1"]:checked').value,
+            question2: document.getElementById('question2').value,
+            question3: document.getElementById('question3').value,
+        };
+
+        // Send answers to the backend using AJAX
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost/submitSurveyAnswers', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+
+                // Update the frontend based on the response
+                handleResponse(response);
+            }
+        };
+
+        xhr.send(JSON.stringify(answers));
+    }
+
+    function handleResponse(response) {
+        // Update the UI based on the response
+        const nextQuestionID = response.nextQuestionID;
+
+        // Show/hide the next question based on nextQuestionID
+        if (nextQuestionID === 0) {
+            // No more questions, survey completed
+            alert('Survey completed! Thank you.');
+        } else {
+            // Hide current question and show the next question
+            document.getElementById(`question${nextQuestionID}Container`).style.display = 'block';
+        }
+    }
+</script>
